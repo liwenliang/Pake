@@ -1,6 +1,6 @@
 {
-  "productName": "weread",
-  "identifier": "com.pake.weread",
+  "productName": "CPTMarkets",
+  "identifier": "com.pake.cptmarkets",
   "bundle": {
     "icon": ["png/weread_512.png"],
     "active": true,

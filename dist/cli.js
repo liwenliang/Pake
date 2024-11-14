@@ -125,7 +125,7 @@ var packageJson = {
 
 var windows = [
 	{
-		url: "https://weread.qq.com",
+		url: "https://www.google.com",
 		url_type: "web",
 		hide_title_bar: true,
 		fullscreen: false,
@@ -147,43 +147,51 @@ var system_tray = {
 	linux: true,
 	windows: true
 };
+var system_tray_path = "icons/icon.png";
 var inject = [
 ];
+var proxy_url = "http://cus-sslfast666.fastsdwan.com:447";
 var pakeConf = {
 	windows: windows,
 	user_agent: user_agent,
 	system_tray: system_tray,
-	inject: inject
+	system_tray_path: system_tray_path,
+	inject: inject,
+	proxy_url: proxy_url
 };
 
-var build = {
-	beforeBuildCommand: "",
-	frontendDist: "../dist",
-	beforeDevCommand: ""
-};
+var productName$3 = "CPTMarkets";
+var identifier$3 = "com.pake.cptmarkets";
+var version = "1.0.0";
 var plugins = {
 };
-var productName = "WeRead";
-var version = "1.0.0";
 var app = {
 	security: {
 		csp: null
 	},
 	trayIcon: {
 		iconPath: "png/icon_512.png",
-		iconAsTemplate: false
+		iconAsTemplate: false,
+		id: "pake-tray"
 	},
 	withGlobalTauri: true
 };
+var build = {
+	beforeBuildCommand: "",
+	frontendDist: "../dist",
+	beforeDevCommand: ""
+};
 var CommonConf = {
-	build: build,
-	plugins: plugins,
-	productName: productName,
+	productName: productName$3,
+	identifier: identifier$3,
 	version: version,
-	app: app
+	plugins: plugins,
+	app: app,
+	build: build
 };
 
-var identifier$2 = "com.pake.weread";
+var identifier$2 = "com.pake.cptmarkets";
+var productName$2 = "CPTMarkets";
 var bundle$2 = {
 	icon: [
 		"png/weread_256.ico",
@@ -216,10 +224,12 @@ var bundle$2 = {
 };
 var WinConf = {
 	identifier: identifier$2,
+	productName: productName$2,
 	bundle: bundle$2
 };
 
-var identifier$1 = "com.pake.weread";
+var productName$1 = "CPTMarkets";
+var identifier$1 = "com.pake.cptmarkets";
 var bundle$1 = {
 	icon: [
 		"icons/weread.icns"
@@ -246,11 +256,13 @@ var bundle$1 = {
 	]
 };
 var MacConf = {
+	productName: productName$1,
 	identifier: identifier$1,
 	bundle: bundle$1
 };
 
-var identifier = "com.pake.weread";
+var productName = "CPTMarkets";
+var identifier = "com.pake.cptmarkets";
 var bundle = {
 	icon: [
 		"png/weread_512.png"
@@ -281,6 +293,7 @@ var bundle = {
 	]
 };
 var LinuxConf = {
+	productName: productName,
 	identifier: identifier,
 	bundle: bundle
 };
@@ -300,7 +313,7 @@ let tauriConfig = {
         ...CommonConf.app,
         trayIcon: {
             ...CommonConf.app.trayIcon,
-            ...platformConfig.app.trayIcon,
+            ...(platformConfig?.app?.trayIcon ?? {}),
         },
     },
     build: CommonConf.build,
@@ -460,7 +473,7 @@ async function combineFiles(files, output) {
 }
 
 async function mergeConfig(url, options, tauriConf) {
-    const { width, height, fullscreen, hideTitleBar, alwaysOnTop, disabledWebShortcuts, activationShortcut, userAgent, showSystemTray, systemTrayIcon, useLocalFile, identifier, name, resizable = true, inject, } = options;
+    const { width, height, fullscreen, hideTitleBar, alwaysOnTop, disabledWebShortcuts, activationShortcut, userAgent, showSystemTray, systemTrayIcon, useLocalFile, identifier, name, resizable = true, inject, proxyUrl, } = options;
     const { platform } = process;
     // Set Windows parameters.
     const tauriConfWindowOptions = {
@@ -516,9 +529,9 @@ async function mergeConfig(url, options, tauriConf) {
     // Processing targets are currently only open to Linux.
     if (platform === 'linux') {
         delete tauriConf.bundle.linux.deb.files;
-        const validTargets = ['all', 'deb', 'appimage'];
+        const validTargets = ['all', 'deb', 'appimage', 'rpm'];
         if (validTargets.includes(options.targets)) {
-            tauriConf.bundle.targets = options.targets === 'all' ? ['deb', 'appimage'] : [options.targets];
+            tauriConf.bundle.targets = options.targets === 'all' ? ['deb', 'appimage', 'rpm'] : [options.targets];
         }
         else {
             logger.warn(`✼ The target must be one of ${validTargets.join(', ')}, the default 'deb' will be used.`);
@@ -594,6 +607,8 @@ async function mergeConfig(url, options, tauriConf) {
         }
     }
     tauriConf.app.trayIcon.iconPath = trayIconPath;
+    tauriConf.pake.system_tray_path = trayIconPath;
+    delete tauriConf.app.trayIcon;
     const injectFilePath = path.join(npmDirectory, `src-tauri/src/inject/custom.js`);
     // inject js or css files
     if (inject?.length > 0) {
@@ -609,6 +624,7 @@ async function mergeConfig(url, options, tauriConf) {
         tauriConf.pake.inject = [];
         await fsExtra.writeFile(injectFilePath, '');
     }
+    tauriConf.pake.proxy_url = proxyUrl || "";
     // Save config file.
     const platformConfigPaths = {
         win32: 'tauri.windows.conf.json',
@@ -617,11 +633,13 @@ async function mergeConfig(url, options, tauriConf) {
     };
     const configPath = path.join(tauriConfigDirectory, platformConfigPaths[platform]);
     const bundleConf = { bundle: tauriConf.bundle };
+    console.log('pakeConfig', tauriConf.pake);
     await fsExtra.outputJSON(configPath, bundleConf, { spaces: 4 });
     const pakeConfigPath = path.join(tauriConfigDirectory, 'pake.json');
     await fsExtra.outputJSON(pakeConfigPath, tauriConf.pake, { spaces: 4 });
     let tauriConf2 = JSON.parse(JSON.stringify(tauriConf));
     delete tauriConf2.pake;
+    console.log('tauriConf', tauriConf2);
     const configJsonPath = path.join(tauriConfigDirectory, 'tauri.conf.json');
     await fsExtra.outputJSON(configJsonPath, tauriConf2, { spaces: 4 });
 }
@@ -802,11 +820,12 @@ const DEFAULT_PAKE_OPTIONS = {
     disabledWebShortcuts: false,
     activationShortcut: '',
     userAgent: '',
-    showSystemTray: false,
+    showSystemTray: true,
     multiArch: false,
     targets: 'deb',
     useLocalFile: false,
     systemTrayIcon: '',
+    proxyUrl: "",
     debug: false,
     inject: [],
     safeDomain: [],
@@ -995,6 +1014,7 @@ program
     .option('--multi-arch', 'Only for Mac, supports both Intel and M1', DEFAULT_PAKE_OPTIONS.multiArch)
     .option('--inject [injects...]', 'Injection of .js or .css Files', DEFAULT_PAKE_OPTIONS.inject)
     .option('--debug', 'Debug build and more output', DEFAULT_PAKE_OPTIONS.debug)
+    .option('--proxy-url', "Proxy URL", DEFAULT_PAKE_OPTIONS.proxyUrl)
     .addOption(new Option('--user-agent <string>', 'Custom user agent').default(DEFAULT_PAKE_OPTIONS.userAgent).hideHelp())
     .addOption(new Option('--targets <string>', 'Only for Linux, option "deb" or "appimage"').default(DEFAULT_PAKE_OPTIONS.targets).hideHelp())
     .addOption(new Option('--always-on-top', 'Always on the top level').default(DEFAULT_PAKE_OPTIONS.alwaysOnTop).hideHelp())
