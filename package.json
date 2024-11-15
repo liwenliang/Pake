@@ -41,7 +41,8 @@
     "cli": "rollup -c rollup.config.js --watch",
     "cli:dev": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
     "cli:build": "cross-env NODE_ENV=production rollup -c rollup.config.js",
-    "prepublishOnly": "npm run cli:build"
+    "prepublishOnly": "npm run cli:build",
+    "build:windows": "npm run tauri build -- --target x86_64-pc-windows-msvc"
   },
   "type": "module",
   "exports": "./dist/pake.js",
