@@ -35,9 +35,19 @@ jobs:
           npm install --no-package-lock
 
       - name: Install NSIS
+        shell: powershell
         run: |
-          choco install nsis -y
-          refreshenv
+          # 安装 NSIS
+          choco install nsis --force -y
+
+          # 正确刷新环境变量
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+          # 验证 NSIS 安装
+          makensis /VERSION
+
+          # 如果需要，显式添加 NSIS 到 PATH
+          $env:Path += ";C:\Program Files (x86)\NSIS"
 
       - name: Build
         run: npm run tauri build
