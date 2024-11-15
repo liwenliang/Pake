@@ -80,7 +80,7 @@ pub fn run_app() {
                 }
 
                 #[cfg(not(target_os = "macos"))]
-                event.window().close().unwrap();
+                window.close().unwrap();
 
                 api.prevent_close();
             }
