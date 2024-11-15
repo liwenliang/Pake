@@ -65,21 +65,9 @@
     "targets": "all",
     "useLocalToolsDir": false,
     "windows": {
-      "allowDowngrades": true,
-      "certificateThumbprint": null,
-      "digestAlgorithm": null,
       "nsis": {
         "installMode": "currentUser",
-        "headerImage": null,
-        "sidebarImage": null,
-        "installerIcon": "png/icon_512.png"
-      },
-      "signCommand": null,
-      "timestampUrl": null,
-      "tsp": false,
-      "webviewInstallMode": {
-        "silent": true,
-        "type": "downloadBootstrapper"
+        "displayLanguageSelector": false
       },
       "wix": null
     }
