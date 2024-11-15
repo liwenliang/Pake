@@ -11,8 +11,7 @@
       "always_on_top": false,
       "activation_shortcut": "",
       "disabled_web_shortcuts": false,
-      "productName": "CPTMarkets",
-      "close_exit": true
+      "productName": "CPTMarkets"
     }
   ],
   "user_agent": {

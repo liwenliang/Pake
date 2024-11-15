@@ -71,20 +71,22 @@ pub fn run_app() {
 
             Ok(())
         })
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                #[cfg(target_os = "macos")]
-                {
-                    window.minimize().unwrap();
-                    window.hide().unwrap();
-                }
+        // .on_window_event(|window, event| {
+        //     if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+        //         #[cfg(target_os = "macos")]
+        //         {
+        //             // window.minimize().unwrap();
+        //             // window.hide().unwrap();
+        //             // api.prevent_close();
+        //             window.close().unwrap();
+        //         }
 
-                #[cfg(not(target_os = "macos"))]
-                window.close().unwrap();
-
-                api.prevent_close();
-            }
-        })
+        //         #[cfg(not(target_os = "macos"))]
+        //         {
+        //             window.close().unwrap();
+        //         }
+        //     }
+        // })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
