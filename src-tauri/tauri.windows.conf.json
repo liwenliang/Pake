@@ -10,14 +10,15 @@
     "longDescription": "",
     "resources": ["png/weread_32.ico"],
     "shortDescription": "",
-    "targets": ["msi"],
+    "targets": ["nsis"],
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
       "timestampUrl": "",
-      "wix": {
-        "language": ["en-US"],
-        "template": "assets/main.wxs"
+      "wix": null,
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
       }
     }
   }
