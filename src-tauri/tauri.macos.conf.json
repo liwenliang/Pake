@@ -2,7 +2,7 @@
   "productName": "CPTMarkets",
   "identifier": "com.pake.cptmarkets",
   "bundle": {
-    "icon": ["icons/weread.icns"],
+    "icon": ["icons/cpticon.icns"],
     "active": true,
     "category": "DeveloperTool",
     "copyright": "",

@@ -1,7 +1,7 @@
 {
   "windows": [
     {
-      "url": "https://www.google.com",
+      "url": "https://login.cptinternational.com",
       "url_type": "web",
       "hide_title_bar": false,
       "fullscreen": false,
@@ -10,7 +10,9 @@
       "resizable": true,
       "always_on_top": false,
       "activation_shortcut": "",
-      "disabled_web_shortcuts": false
+      "disabled_web_shortcuts": false,
+      "productName": "CPTMarkets",
+      "close_exit": true
     }
   ],
   "user_agent": {

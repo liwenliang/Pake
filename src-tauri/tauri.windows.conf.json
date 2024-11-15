@@ -2,13 +2,13 @@
   "identifier": "com.pake.cptmarkets",
   "productName": "CPTMarkets",
   "bundle": {
-    "icon": ["png/weread_256.ico", "png/weread_32.ico"],
+    "icon": ["png/cpticon.ico", "png/cpticon.ico"],
     "active": true,
     "category": "DeveloperTool",
     "copyright": "",
     "externalBin": [],
     "longDescription": "",
-    "resources": ["png/weread_32.ico"],
+    "resources": ["png/cpticon.ico"],
     "shortDescription": "",
     "targets": ["nsis"],
     "windows": {
