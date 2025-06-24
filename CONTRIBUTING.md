@@ -6,15 +6,15 @@
 
 ```mermaid
 graph LR
-    b_dev(dev) --> b_main(main);
+    b_dev(dev) --> b_master(master);
     contributions([Develop / Pull requests]) -.-> b_dev;
 ```
 
 - `dev` branch
   - `dev` is the developing branch.
   - It's **RECOMMENDED** to commit feature PR to `dev`.
-- `main` branch
-  - `main` is the release branch, we will make tag and publish version on this branch.
+- `master` branch
+  - `master` is the release branch, we will make tag and publish version on this branch.
   - If it is a document modification, it can be submitted to this branch.
 
 ## More

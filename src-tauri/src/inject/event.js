@@ -43,18 +43,28 @@ function isDownloadLink(url) {
     '3gp', '7z', 'ai', 'apk', 'avi', 'bmp', 'csv', 'dmg', 'doc', 'docx',
     'fla', 'flv', 'gif', 'gz', 'gzip', 'ico', 'iso', 'indd', 'jar', 'jpeg',
     'jpg', 'm3u8', 'mov', 'mp3', 'mp4', 'mpa', 'mpg', 'mpeg', 'msi', 'odt',
-    'ogg', 'ogv', 'pdf', 'png', 'ppt', 'pptx', 'psd', 'rar', 'raw',
+    'ogg', 'ogv', 'pdf', 'png', 'ppt', 'pptx', 'psd', 'rar', 'raw', 'rss',
     'svg', 'swf', 'tar', 'tif', 'tiff', 'ts', 'txt', 'wav', 'webm', 'webp',
-    'wma', 'wmv', 'xls', 'xlsx', 'xml', 'zip', 'json', 'yaml', '7zip', 'mkv',
+    'wma', 'wmv', 'xls', 'xlsx', 'xml', 'zip', 'json', 'yaml', '7zip', 'mkv'
   ];
   const downloadLinkPattern = new RegExp(`\\.(${fileExtensions.join('|')})$`, 'i');
   return downloadLinkPattern.test(url);
 }
 
+// No need to go to the download link.
+function externalDownLoadLink() {
+  return ['quickref.me'].indexOf(location.hostname) > -1;
+}
+
+// Directly jumping out without hostname address.
+function externalTargetLink() {
+  return ['zbook.lol'].indexOf(location.hostname) > -1;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const tauri = window.__TAURI__;
-  const appWindow = tauri.window.getCurrentWindow();
-  const invoke = tauri.core.invoke;
+  const appWindow = tauri.window.appWindow;
+  const invoke = tauri.invoke;
 
   if (!document.getElementById('pake-top-dom')) {
     const topDom = document.createElement('div');
@@ -65,19 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const domEl = document.getElementById('pake-top-dom');
 
   domEl.addEventListener('touchstart', () => {
-    appWindow.startDragging();
+    appWindow.startDragging().then();
   });
 
   domEl.addEventListener('mousedown', e => {
     e.preventDefault();
     if (e.buttons === 1 && e.detail !== 2) {
-      appWindow.startDragging();
+      appWindow.startDragging().then();
     }
   });
 
   domEl.addEventListener('dblclick', () => {
     appWindow.isFullscreen().then(fullscreen => {
-      appWindow.setFullscreen(!fullscreen);
+      appWindow.setFullscreen(!fullscreen).then();
     });
   });
 
@@ -166,6 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // case: download from dataURL -> convert dataURL ->
           } else if (url.startsWith('data:')) {
             downloadFromDataUri(url, filename);
+          } else if (isDownloadLink(url) || anchorEle.host !== window.location.host) {
+            handleExternalLink(e, url);
           }
         },
         true,
@@ -175,42 +187,55 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  const isExternalLink = link => window.location.host !== link.host;
   // process special download protocol['data:','blob:']
   const isSpecialDownload = url => ['blob', 'data'].some(protocol => url.startsWith(protocol));
 
   const isDownloadRequired = (url, anchorElement, e) => anchorElement.download || e.metaKey || e.ctrlKey || isDownloadLink(url);
 
-  const handleExternalLink = url => {
-    invoke('plugin:shell|open', {
-      path: url,
-    });
+  const handleExternalLink = (e, url) => {
+    const { Window } = window.__TAURI__.window;
+    if (Window) {
+      const appWindow = new Window(`window-${Date.now()}`, {
+        url: url,
+        title: '新窗口',
+        width: 800,
+        height: 600,
+        center: true,
+      });
+      appWindow.show().catch(err => {
+        console.error('Failed to show window:', err);
+      });
+    } else {
+      console.error('TAURI Window object is not available.');
+    }
+  };
+
+  const handleDownloadLink = (e, url, filename) => {
+    e.preventDefault();
+    invoke('download_file', { params: { url, filename } });
   };
 
   const detectAnchorElementClick = e => {
     const anchorElement = e.target.closest('a');
-
     if (anchorElement && anchorElement.href) {
-      const target = anchorElement.target;
+      if (!anchorElement.target) {
+        anchorElement.target = '_self';
+      }
+
       const hrefUrl = new URL(anchorElement.href);
       const absoluteUrl = hrefUrl.href;
       let filename = anchorElement.download || getFilenameFromUrl(absoluteUrl);
 
-      // Handling external link redirection, _blank will automatically open.
-      if (target === '_blank') {
-        e.preventDefault();
-        return;
-      }
-
-      if (target === '_new') {
-        e.preventDefault();
-        handleExternalLink(absoluteUrl);
+      // Handling external link redirection.
+      if ((isExternalLink(absoluteUrl) && ['_blank', '_new'].includes(anchorElement.target)) || externalTargetLink()) {
+        handleExternalLink(e, absoluteUrl);
         return;
       }
 
       // Process download links for Rust to handle.
-      if (isDownloadRequired(absoluteUrl, anchorElement, e) && !isSpecialDownload(absoluteUrl)) {
-        e.preventDefault();
-        invoke('download_file', { params: { url: absoluteUrl, filename } });
+      if (isDownloadRequired(absoluteUrl, anchorElement, e) && !externalDownLoadLink() && !isSpecialDownload(absoluteUrl)) {
+        handleDownloadLink(e, absoluteUrl, filename);
       }
     }
   };
@@ -232,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       const baseUrl = window.location.origin + window.location.pathname;
       const hrefUrl = new URL(url, baseUrl);
-      handleExternalLink(hrefUrl.href);
+      tauri.shell.open(hrefUrl.href);
     }
     // Call the original window.open function to maintain its normal functionality.
     return originalWindowOpen.call(window, url, name, specs);
@@ -253,38 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     true,
   );
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-  let permVal = 'granted';
-  window.Notification = function (title, options) {
-    const { invoke } = window.__TAURI__.core;
-    const body = options?.body || '';
-    let icon = options?.icon || '';
-
-    // If the icon is a relative path, convert to full path using URI
-    if (icon.startsWith('/')) {
-      icon = window.location.origin + icon;
-    }
-
-    invoke('send_notification', {
-      params: {
-        title,
-        body,
-        icon,
-      },
-    });
-  };
-
-  window.Notification.requestPermission = async () => 'granted';
-
-  Object.defineProperty(window.Notification, 'permission', {
-    enumerable: true,
-    get: () => permVal,
-    set: v => {
-      permVal = v;
-    },
-  });
 });
 
 function setDefaultZoom() {

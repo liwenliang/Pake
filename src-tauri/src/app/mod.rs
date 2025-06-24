@@ -1,4 +1,4 @@
 pub mod config;
 pub mod invoke;
-pub mod setup;
+pub mod menu;
 pub mod window;

@@ -3,8 +3,9 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::str::FromStr;
 use tauri::http::Method;
-use tauri::{command, AppHandle, Manager, Url, WebviewWindow};
 use tauri_plugin_http::reqwest::{ClientBuilder, Request};
+// use tauri::http::{ClientBuilder, HttpRequestBuilder, ResponseType};
+use tauri::{command, AppHandle, Manager, Url, WebviewWindow};
 
 #[derive(serde::Deserialize)]
 pub struct DownloadFileParams {
@@ -16,13 +17,6 @@ pub struct DownloadFileParams {
 pub struct BinaryDownloadParams {
     filename: String,
     binary: Vec<u8>,
-}
-
-#[derive(serde::Deserialize)]
-pub struct NotificationParams {
-    title: String,
-    body: String,
-    icon: String,
 }
 
 #[command]
@@ -77,17 +71,4 @@ pub async fn download_file_by_binary(
             Err(e.to_string())
         }
     }
-}
-
-#[command]
-pub fn send_notification(app: AppHandle, params: NotificationParams) -> Result<(), String> {
-    use tauri_plugin_notification::NotificationExt;
-    app.notification()
-        .builder()
-        .title(&params.title)
-        .body(&params.body)
-        .icon(&params.icon)
-        .show()
-        .unwrap();
-    Ok(())
 }
