@@ -1,0 +1,63 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [ experimental ]
+  pull_request:
+    branches: [ experimental ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install dependencies
+        run: |
+          npm cache clean --force
+          npm install --no-package-lock
+
+      - name: Install NSIS
+        shell: powershell
+        run: |
+          # 安装 NSIS
+          choco install nsis --force -y
+
+          # 正确刷新环境变量
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+          # 验证 NSIS 安装
+          makensis /VERSION
+
+          # 如果需要，显式添加 NSIS 到 PATH
+          $env:Path += ";C:\Program Files (x86)\NSIS"
+
+      - name: Build
+        run: npm run tauri build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/*.exe

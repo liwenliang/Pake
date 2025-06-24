@@ -8,12 +8,10 @@ export const DEFAULT_PAKE_OPTIONS: PakeCliOptions = {
   resizable: true,
   hideTitleBar: false,
   alwaysOnTop: false,
-  appVersion: '1.0.0',
-  darkMode: false,
   disabledWebShortcuts: false,
   activationShortcut: '',
   userAgent: '',
-  showSystemTray: false,
+  showSystemTray: true,
   multiArch: false,
   targets: 'deb',
   useLocalFile: false,
@@ -21,13 +19,13 @@ export const DEFAULT_PAKE_OPTIONS: PakeCliOptions = {
   proxyUrl: "",
   debug: false,
   inject: [],
-  installerLanguage: 'en-US',
+  safeDomain: [],
 };
 
 // Just for cli development
 export const DEFAULT_DEV_PAKE_OPTIONS: PakeCliOptions & { url: string } = {
   ...DEFAULT_PAKE_OPTIONS,
-  url: 'https://weread.qq.com',
-  name: 'WeRead',
+  url: 'https://www.xiaoyuzhoufm.com/',
+  name: 'XiaoYuZhou',
   hideTitleBar: true,
 };

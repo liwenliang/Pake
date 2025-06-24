@@ -13,10 +13,11 @@ console.log('name: ', process.env.NAME);
 console.log('icon: ', process.env.ICON);
 console.log('height: ', process.env.HEIGHT);
 console.log('width: ', process.env.WIDTH);
-console.log('fullscreen: ', process.env.FULLSCREEN);
 console.log('hide-title-bar: ', process.env.HIDE_TITLE_BAR);
+console.log('resize: ', process.env.RESIZE);
 console.log('is multi arch? only for Mac: ', process.env.MULTI_ARCH);
 console.log('targets type? only for Linux: ', process.env.TARGETS);
+console.log('safe-domain: ', process.env.SAFE_DOMAIN);
 console.log('===========================\n');
 
 cd('node_modules/pake-cli');
@@ -27,7 +28,7 @@ if (process.env.HIDE_TITLE_BAR === 'true') {
 }
 
 if (process.env.FULLSCREEN === 'true') {
-  params = `${params} --fullscreen`;
+  params = `${params} --resize`;
 }
 
 if (process.env.MULTI_ARCH === 'true') {
@@ -37,6 +38,10 @@ if (process.env.MULTI_ARCH === 'true') {
 
 if (process.env.TARGETS) {
   params = `${params} --targets ${process.env.TARGETS}`;
+}
+
+if (process.env.SAFE_DOMAIN) {
+  params = `${params} --safe-domain ${process.env.SAFE_DOMAIN}`;
 }
 
 if (process.platform === 'win32' || process.platform === 'linux') {

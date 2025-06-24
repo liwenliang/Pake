@@ -14,8 +14,6 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
     fullscreen,
     hideTitleBar,
     alwaysOnTop,
-    appVersion,
-    darkMode,
     disabledWebShortcuts,
     activationShortcut,
     userAgent,
@@ -27,7 +25,6 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
     resizable = true,
     inject,
     proxyUrl,
-    installerLanguage,
   } = options;
 
   const { platform } = process;
@@ -41,18 +38,12 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
     hide_title_bar: hideTitleBar,
     activation_shortcut: activationShortcut,
     always_on_top: alwaysOnTop,
-    dark_mode: darkMode,
     disabled_web_shortcuts: disabledWebShortcuts,
   };
   Object.assign(tauriConf.pake.windows[0], { url, ...tauriConfWindowOptions });
 
   tauriConf.productName = name;
   tauriConf.identifier = identifier;
-  tauriConf.version = appVersion;
-
-  if (platform == 'win32') {
-    tauriConf.bundle.windows.wix.language[0] = installerLanguage;
-  }
 
   //Judge the type of URL, whether it is a file or a website.
   const pathExists = await fsExtra.pathExists(url);
@@ -76,7 +67,9 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
       // ignore it, because about_pake.html have be erased.
       // const filesToCopyBack = ['cli.js', 'about_pake.html'];
       const filesToCopyBack = ['cli.js'];
-      await Promise.all(filesToCopyBack.map(file => fsExtra.copy(path.join(distBakDir, file), path.join(distDir, file))));
+      await Promise.all(
+        filesToCopyBack.map(file => fsExtra.copy(path.join(distBakDir, file), path.join(distDir, file))),
+      );
     }
 
     tauriConf.pake.windows[0].url = fileName;
@@ -101,9 +94,9 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
   // Processing targets are currently only open to Linux.
   if (platform === 'linux') {
     delete tauriConf.bundle.linux.deb.files;
-    const validTargets = ['deb', 'appimage', 'rpm'];
+    const validTargets = ['all', 'deb', 'appimage', 'rpm'];
     if (validTargets.includes(options.targets)) {
-      tauriConf.bundle.targets = [options.targets];
+      tauriConf.bundle.targets = options.targets === 'all' ? ['deb', 'appimage', 'rpm'] : [options.targets];
     } else {
       logger.warn(`✼ The target must be one of ${validTargets.join(', ')}, the default 'deb' will be used.`);
     }
@@ -183,7 +176,6 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
   delete tauriConf.app.trayIcon;
 
   const injectFilePath = path.join(npmDirectory, `src-tauri/src/inject/custom.js`);
-
   // inject js or css files
   if (inject?.length > 0) {
     if (!inject.every(item => item.endsWith('.css') || item.endsWith('.js'))) {
@@ -197,7 +189,8 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
     tauriConf.pake.inject = [];
     await fsExtra.writeFile(injectFilePath, '');
   }
-  tauriConf.pake.proxy_url = proxyUrl || '';
+
+  tauriConf.pake.proxy_url = proxyUrl || "";
 
   // Save config file.
   const platformConfigPaths: PlatformMap = {
@@ -205,7 +198,6 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
     darwin: 'tauri.macos.conf.json',
     linux: 'tauri.linux.conf.json',
   };
-
   const configPath = path.join(tauriConfigDirectory, platformConfigPaths[platform]);
 
   const bundleConf = { bundle: tauriConf.bundle };
@@ -216,11 +208,11 @@ export async function mergeConfig(url: string, options: PakeAppOptions, tauriCon
 
   let tauriConf2 = JSON.parse(JSON.stringify(tauriConf));
   delete tauriConf2.pake;
-
   // delete tauriConf2.bundle;
   if (process.env.NODE_ENV === 'development') {
     tauriConf2.bundle = bundleConf.bundle;
   }
+  console.log('tauriConf', tauriConf2)
   const configJsonPath = path.join(tauriConfigDirectory, 'tauri.conf.json');
   await fsExtra.outputJSON(configJsonPath, tauriConf2, { spaces: 4 });
 }

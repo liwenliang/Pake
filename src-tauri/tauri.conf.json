@@ -1,16 +1,75 @@
 {
-  "productName": "WeRead",
-  "identifier": "com.pake.weread",
+  "productName": "CPTMarkets",
+  "identifier": "com.pake.cptmarkets",
   "version": "1.0.0",
+  "plugins": {},
   "app": {
-    "withGlobalTauri": true,
+    "security": {
+      "csp": "default-src 'self' https: 'unsafe-inline' 'unsafe-eval' '*'; img-src 'self' https: data: blob: 'unsafe-inline' '*'; connect-src 'self' https: wss: data: blob: '*'"
+    },
     "trayIcon": {
-      "iconPath": "png/weread_512.png",
+      "iconPath": "png/icon_512.png",
       "iconAsTemplate": false,
       "id": "pake-tray"
-    }
+    },
+    "withGlobalTauri": true
   },
   "build": {
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "",
+    "frontendDist": "../dist",
+    "beforeDevCommand": ""
+  },
+  "bundle": {
+    "active": false,
+    "android": {
+      "minSdkVersion": 24
+    },
+    "createUpdaterArtifacts": false,
+    "iOS": {
+      "minimumSystemVersion": "13.0"
+    },
+    "icon": [],
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false,
+        "files": {}
+      },
+      "deb": {
+        "files": {}
+      },
+      "rpm": {
+        "epoch": 0,
+        "files": {},
+        "release": "1"
+      }
+    },
+    "macOS": {
+      "dmg": {
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        },
+        "windowSize": {
+          "height": 400,
+          "width": 660
+        }
+      },
+      "files": {},
+      "hardenedRuntime": true,
+      "minimumSystemVersion": "10.13"
+    },
+    "targets": "all",
+    "useLocalToolsDir": false,
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
+      },
+      "wix": null
+    }
   }
 }
